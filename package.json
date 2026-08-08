@@ -1,0 +1,18 @@
+{
+  "name": "poster",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "particles": "npx --yes serve particles -l 5173",
+    "deploy": "npx --yes wrangler pages deploy particles --project-name=neuro-spatial-strategies --commit-dirty=true",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "sharp": "^0.35.3"
+  }
+}
