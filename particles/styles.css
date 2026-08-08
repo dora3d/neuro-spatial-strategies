@@ -144,14 +144,60 @@ canvas {
 .controls {
   position: fixed;
   top: 7.5rem;
-  right: 1.25rem;
+  right: 0;
   z-index: 3;
-  width: min(14.5rem, calc(100vw - 2rem));
+  display: flex;
+  align-items: flex-start;
+  gap: 0.35rem;
+  max-width: calc(100vw - 0.5rem);
   padding: 0;
   background: transparent;
   border: 0;
   color: var(--ink);
   pointer-events: auto;
+  transition: transform 0.28s ease;
+}
+
+.controls-toggle {
+  flex-shrink: 0;
+  width: 1.75rem;
+  height: 2.4rem;
+  margin: 0.15rem 0 0;
+  padding: 0;
+  border: 1px solid rgba(245, 242, 235, 0.28);
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.controls-toggle-arrow {
+  display: block;
+  width: 0.45rem;
+  height: 0.45rem;
+  margin: 0 auto;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(-45deg); /* points right — hide */
+  transition: transform 0.2s ease;
+}
+
+.controls.collapsed .controls-toggle-arrow {
+  transform: rotate(135deg); /* points left — show */
+}
+
+.controls-body {
+  width: min(14.5rem, calc(100vw - 3.25rem));
+  margin-right: 1.25rem;
+  transition: opacity 0.2s ease;
+}
+
+.controls.collapsed {
+  transform: translateX(calc(100% - 1.75rem));
+}
+
+.controls.collapsed .controls-body {
+  opacity: 0;
+  pointer-events: none;
 }
 
 .controls label {
@@ -185,6 +231,31 @@ canvas {
   width: 100%;
   accent-color: var(--accent);
   background: transparent;
+}
+
+.controls .toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 0.25rem;
+  margin-bottom: 0;
+}
+
+.controls .toggle-row span {
+  grid-column: auto;
+}
+
+.controls .toggle-row input[type="checkbox"] {
+  width: 1.05rem;
+  height: 1.05rem;
+  margin: 0;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.tags.hidden {
+  visibility: hidden;
 }
 
 .chrome-bottom {
@@ -393,9 +464,10 @@ body.page-info {
   .controls {
     top: auto;
     bottom: 5.75rem;
-    right: 0.85rem;
-    left: 0.85rem;
-    width: auto;
+  }
+
+  .controls-body {
+    margin-right: 0.75rem;
   }
 
   .chrome-bottom {

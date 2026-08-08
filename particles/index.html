@@ -26,32 +26,48 @@
       <p class="subtitle">Designing for the Mind and Body</p>
     </header>
 
-    <aside class="controls" aria-label="Particle controls">
-      <label>
-        <span>Birth count</span>
-        <input id="birth" type="range" min="1" max="200" value="40" />
-        <output id="birthOut">40 /s</output>
-      </label>
-      <label>
-        <span>Life duration</span>
-        <input id="life" type="range" min="1" max="6" step="0.1" value="3" />
-        <output id="lifeOut">3.0 s</output>
-      </label>
-      <label>
-        <span>Speed</span>
-        <input id="speed" type="range" min="0.05" max="0.6" step="0.01" value="0.08" />
-        <output id="speedOut">0.08×</output>
-      </label>
-      <label>
-        <span>Trail length</span>
-        <input id="trail" type="range" min="2" max="120" value="48" />
-        <output id="trailOut">48</output>
-      </label>
-      <label>
-        <span>Path</span>
-        <input id="path" type="range" min="0" max="1" step="0.01" value="1" />
-        <output id="pathOut">very random</output>
-      </label>
+    <aside class="controls" id="controls" aria-label="Particle controls">
+      <button
+        type="button"
+        class="controls-toggle"
+        id="controlsToggle"
+        aria-expanded="true"
+        aria-controls="controlsBody"
+        title="Hide controls"
+      >
+        <span class="controls-toggle-arrow" aria-hidden="true"></span>
+      </button>
+      <div class="controls-body" id="controlsBody">
+        <label>
+          <span>Birth count</span>
+          <input id="birth" type="range" min="1" max="200" value="40" />
+          <output id="birthOut">40 /s</output>
+        </label>
+        <label>
+          <span>Life duration</span>
+          <input id="life" type="range" min="1" max="6" step="0.1" value="3" />
+          <output id="lifeOut">3.0 s</output>
+        </label>
+        <label>
+          <span>Speed</span>
+          <input id="speed" type="range" min="0.05" max="0.6" step="0.01" value="0.08" />
+          <output id="speedOut">0.08×</output>
+        </label>
+        <label>
+          <span>Trail length</span>
+          <input id="trail" type="range" min="2" max="120" value="48" />
+          <output id="trailOut">48</output>
+        </label>
+        <label>
+          <span>Path</span>
+          <input id="path" type="range" min="0" max="1" step="0.01" value="1" />
+          <output id="pathOut">very random</output>
+        </label>
+        <label class="toggle-row">
+          <span>Tags</span>
+          <input id="tagsToggle" type="checkbox" checked />
+        </label>
+      </div>
     </aside>
 
     <footer class="chrome-bottom">

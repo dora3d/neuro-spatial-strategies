@@ -5,6 +5,21 @@
   const popup = document.getElementById("termPopup");
   const popupTitle = popup.querySelector(".term-popup-title");
   const popupBody = popup.querySelector(".term-popup-body");
+  const controlsEl = document.getElementById("controls");
+  const controlsToggle = document.getElementById("controlsToggle");
+
+  controlsToggle.addEventListener("click", () => {
+    const collapsed = controlsEl.classList.toggle("collapsed");
+    controlsToggle.setAttribute("aria-expanded", String(!collapsed));
+    controlsToggle.title = collapsed ? "Show controls" : "Hide controls";
+  });
+
+  const tagsToggle = document.getElementById("tagsToggle");
+  function syncTagsVisibility() {
+    tagsEl.classList.toggle("hidden", !tagsToggle.checked);
+  }
+  tagsToggle.addEventListener("change", syncTagsVisibility);
+  syncTagsVisibility();
 
   const TERMS = window.NEURO_TERMS || [];
   const MAX_TAGS = 4;
@@ -153,7 +168,7 @@
     const life = Number(controls.life.value);
     const speedMul = Number(controls.speed.value);
     // Base outward speed is independent of life so longer life = farther travel
-    const baseSpeed = Math.hypot(w, h) * 0.5;
+    const baseSpeed = Math.hypot(w, h) * 0.65;
     const speed = baseSpeed * speedMul;
 
     let term = null;
