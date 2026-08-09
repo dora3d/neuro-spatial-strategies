@@ -52,11 +52,40 @@
   let popupTimer = 0;
   let termCursor = 0;
 
+  // Golden angle — Vogel / fractal disc packing
+  const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5));
+  let spawnIndex = 0;
+  let pathSmoothed = Number(controls.path.value);
+  let pathSmoothPrev = pathSmoothed;
+
+  function smoothstep(e0, e1, x) {
+    const t = Math.min(1, Math.max(0, (x - e0) / (e1 - e0)));
+    return t * t * (3 - 2 * t);
+  }
+
+  function lerpAngle(a, b, t) {
+    let d = b - a;
+    while (d > Math.PI) d -= Math.PI * 2;
+    while (d < -Math.PI) d += Math.PI * 2;
+    return a + d * t;
+  }
+
   function pathLabel(v) {
     if (v < 0.05) return "straight";
-    if (v < 0.35) return "slight";
-    if (v < 0.7) return "random";
-    return "very random";
+    if (v < 0.3) return "slight";
+    if (v < 0.5) return "random";
+    if (v < 0.62) return "very random";
+    if (v < 0.85) return "→ fractal";
+    return "fractal";
+  }
+
+  // Continuum: 0–0.55 straight→random (peak), 0.6–1 random→fractal packing
+  function pathMix(v) {
+    const randomUp = smoothstep(0, 0.48, v);
+    const randomDown = 1 - smoothstep(0.58, 0.92, v);
+    const random = randomUp * randomDown;
+    const fractal = smoothstep(0.6, 1, v);
+    return { random, fractal };
   }
 
   function syncLabels() {
@@ -67,9 +96,18 @@
     outs.path.textContent = pathLabel(Number(controls.path.value));
   }
 
+  function clearAllHistories() {
+    for (const p of particles) p.history.length = 0;
+  }
+
   for (const el of Object.values(controls)) {
     el.addEventListener("input", syncLabels);
   }
+  controls.path.addEventListener("input", () => {
+    const target = Number(controls.path.value);
+    // Big Path jumps would bolt through old trail points — drop histories
+    if (Math.abs(target - pathSmoothed) > 0.06) clearAllHistories();
+  });
   syncLabels();
 
   function resize() {
@@ -177,10 +215,15 @@
       term = pickTerm();
     }
 
+    const n = spawnIndex++;
+    const chirality = n % 2 === 0 ? 1 : -1;
     const p = {
       ox: cx,
       oy: cy,
       angle: Math.random() * Math.PI * 2,
+      chirality,
+      vogelAngle: n * GOLDEN_ANGLE * chirality,
+      vogelIndex: n,
       speed,
       age: 0,
       maxLife: life * (0.85 + Math.random() * 0.4),
@@ -209,24 +252,25 @@
     particles.push(p);
   }
 
-  function positionAt(p, age, pathRand) {
+  function positionAt(p, age, pathVal) {
     const r = p.speed * age;
-    if (pathRand <= 0.001) {
-      return {
-        x: p.ox + Math.cos(p.angle) * r,
-        y: p.oy + Math.sin(p.angle) * r,
-      };
-    }
+    const { random, fractal } = pathMix(pathVal);
+
+    // Rays morph toward golden-angle packing; chirality flips spiral direction
+    const twist = p.chirality * 0.1 * Math.sqrt(Math.max(r, 0)) * fractal;
+    const targetAng = p.vogelAngle + twist;
+    const ang = lerpAngle(p.angle, targetAng, smoothstep(0, 1, fractal));
+
+    const wobbleAmp = random * (1 - fractal * 0.92) * p.amp * r * 0.22;
     const wobble =
       (Math.sin(age * p.freq + p.seed) * 0.65 +
         Math.sin(age * p.freq2 * 2.3 + p.seed * 1.7) * 0.35) *
-      pathRand *
-      p.amp *
-      r *
-      0.22;
-    const drift = Math.sin(age * 0.35 + p.seed) * pathRand * r * 0.04;
-    const px = Math.cos(p.angle);
-    const py = Math.sin(p.angle);
+      wobbleAmp;
+    const drift =
+      Math.sin(age * 0.35 + p.seed) * random * (1 - fractal) * r * 0.04;
+
+    const px = Math.cos(ang);
+    const py = Math.sin(ang);
     const nx = -py;
     const ny = px;
     return {
@@ -246,7 +290,14 @@
   function update(dt) {
     const birth = Number(controls.birth.value);
     const trailLen = Math.max(2, Number(controls.trail.value) | 0);
-    const pathRand = Number(controls.path.value);
+    const pathTarget = Number(controls.path.value);
+    // Ease Path so fractal morphs don't snap mid-trail
+    const follow = 1 - Math.exp(-dt * 4.5);
+    pathSmoothed += (pathTarget - pathSmoothed) * follow;
+    if (Math.abs(pathSmoothed - pathSmoothPrev) > 0.035) {
+      clearAllHistories();
+    }
+    pathSmoothPrev = pathSmoothed;
 
     spawnAcc += birth * dt;
     while (spawnAcc >= 1) {
@@ -262,7 +313,7 @@
         particles.splice(i, 1);
         continue;
       }
-      const pos = positionAt(p, p.age, pathRand);
+      const pos = positionAt(p, p.age, pathSmoothed);
       p.history.push(pos);
       if (p.history.length > trailLen) {
         p.history.splice(0, p.history.length - trailLen);

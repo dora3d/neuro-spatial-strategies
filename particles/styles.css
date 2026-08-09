@@ -233,6 +233,14 @@ canvas {
   background: transparent;
 }
 
+.path-hint {
+  margin: -0.25rem 0 0.55rem;
+  font-size: 0.6rem;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.45);
+}
+
 .controls .toggle-row {
   display: flex;
   align-items: center;
