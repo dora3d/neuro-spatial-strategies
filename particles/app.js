@@ -199,7 +199,7 @@
     popupTimer = setTimeout(() => {
       popup.classList.remove("visible");
       popup.hidden = true;
-    }, 6000);
+    }, 5000);
   }
 
   function spawn() {
@@ -339,13 +339,10 @@
     }
   }
 
-  function draw() {
-    ctx.fillStyle = "#5a5c58";
-    ctx.fillRect(0, 0, w, h);
-
-    ctx.lineWidth = 1;
-    ctx.lineJoin = "round";
-    ctx.lineCap = "round";
+  function drawParticles(targetCtx, scale = 1) {
+    targetCtx.lineWidth = Math.max(1, scale);
+    targetCtx.lineJoin = "round";
+    targetCtx.lineCap = "round";
 
     for (const p of particles) {
       const hist = p.history;
@@ -354,24 +351,129 @@
       const lifeT = p.age / p.maxLife;
       const fade = 1 - lifeT;
 
-      ctx.beginPath();
-      ctx.moveTo(hist[0].x, hist[0].y);
+      targetCtx.beginPath();
+      targetCtx.moveTo(hist[0].x * scale, hist[0].y * scale);
       for (let i = 1; i < hist.length; i++) {
-        ctx.lineTo(hist[i].x, hist[i].y);
+        targetCtx.lineTo(hist[i].x * scale, hist[i].y * scale);
       }
-      ctx.strokeStyle = `rgba(245, 242, 235, ${0.16 + fade * 0.55})`;
-      ctx.stroke();
+      targetCtx.strokeStyle = `rgba(245, 242, 235, ${0.16 + fade * 0.55})`;
+      targetCtx.stroke();
 
       const head = hist[hist.length - 1];
-      const size = p.term ? 2.4 + fade * 1.8 : 1.4 + fade * 1.6;
-      ctx.beginPath();
-      ctx.fillStyle = p.term
+      const size = (p.term ? 2.4 + fade * 1.8 : 1.4 + fade * 1.6) * scale;
+      targetCtx.beginPath();
+      targetCtx.fillStyle = p.term
         ? `rgba(201, 162, 39, ${0.55 + fade * 0.4})`
         : `rgba(245, 242, 235, ${0.45 + fade * 0.5})`;
-      ctx.arc(head.x, head.y, size, 0, Math.PI * 2);
-      ctx.fill();
+      targetCtx.arc(head.x * scale, head.y * scale, size, 0, Math.PI * 2);
+      targetCtx.fill();
     }
   }
+
+  function draw() {
+    ctx.fillStyle = "#5a5c58";
+    ctx.fillRect(0, 0, w, h);
+    drawParticles(ctx, 1);
+  }
+
+  const BG = "#5a5c58";
+  const exportToast = document.getElementById("exportToast");
+  let toastTimer = 0;
+  let exportBusy = false;
+
+  function showExportToast(msg) {
+    if (!exportToast) return;
+    exportToast.hidden = false;
+    exportToast.textContent = msg;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => {
+      exportToast.hidden = true;
+    }, 1500);
+  }
+
+  // S = JPG with stage background; E = transparent PNG. High-res, particles only.
+  function exportArtwork(format) {
+    if (exportBusy || !w || !h) return;
+    exportBusy = true;
+    showExportToast("Downloading…");
+
+    const longEdge = 4096;
+    const scale = longEdge / Math.max(w, h);
+    const ew = Math.round(w * scale);
+    const eh = Math.round(h * scale);
+    const off = document.createElement("canvas");
+    off.width = ew;
+    off.height = eh;
+    const transparent = format === "png";
+    const octx = off.getContext("2d", { alpha: transparent });
+    if (transparent) {
+      octx.clearRect(0, 0, ew, eh);
+    } else {
+      octx.fillStyle = BG;
+      octx.fillRect(0, 0, ew, eh);
+    }
+    drawParticles(octx, scale);
+
+    const mime = transparent ? "image/png" : "image/jpeg";
+    const quality = transparent ? undefined : 0.92;
+    const ext = transparent ? "png" : "jpg";
+
+    off.toBlob(
+      (blob) => {
+        exportBusy = false;
+        if (!blob) {
+          showExportToast("Export failed");
+          return;
+        }
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `neuro-spatial-${Date.now()}.${ext}`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        // Delay revoke so the browser can finish the download
+        setTimeout(() => URL.revokeObjectURL(url), 2000);
+        showExportToast("Saved");
+      },
+      mime,
+      quality
+    );
+  }
+
+  window.addEventListener("keydown", (e) => {
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    const key = e.key.toLowerCase();
+    if (key !== "e" && key !== "s") return;
+    // Allow while sliders focused; skip real text fields only
+    const el = e.target;
+    if (el && (el.tagName === "TEXTAREA" || (el.tagName === "INPUT" && el.type === "text"))) {
+      return;
+    }
+    e.preventDefault();
+    exportArtwork(key === "e" ? "png" : "jpg");
+  });
+
+  // Mobile: double-tap canvas → JPG (same as S)
+  let lastTap = { t: 0, x: 0, y: 0 };
+  canvas.addEventListener(
+    "touchend",
+    (e) => {
+      if (e.changedTouches.length !== 1) return;
+      const touch = e.changedTouches[0];
+      const now = performance.now();
+      const dx = touch.clientX - lastTap.x;
+      const dy = touch.clientY - lastTap.y;
+      if (now - lastTap.t < 320 && Math.hypot(dx, dy) < 28) {
+        e.preventDefault();
+        exportArtwork("jpg");
+        lastTap.t = 0;
+      } else {
+        lastTap = { t: now, x: touch.clientX, y: touch.clientY };
+      }
+    },
+    { passive: false }
+  );
 
   function frame(now) {
     const dt = Math.min(0.05, (now - last) / 1000);

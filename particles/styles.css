@@ -266,6 +266,40 @@ canvas {
   visibility: hidden;
 }
 
+.shortcuts-hint {
+  margin: 0.85rem 0 0;
+  padding-top: 0.7rem;
+  border-top: 1px solid rgba(245, 242, 235, 0.14);
+  display: flex;
+  flex-direction: column;
+  gap: 0.28rem;
+  font-size: 0.6rem;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.45);
+}
+
+.export-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 5.5rem;
+  transform: translateX(-50%);
+  z-index: 6;
+  padding: 0.55rem 0.95rem;
+  border: 1px solid rgba(245, 242, 235, 0.28);
+  background: rgba(28, 30, 26, 0.88);
+  color: var(--ink);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  backdrop-filter: blur(10px);
+  pointer-events: none;
+}
+
+.export-toast[hidden] {
+  display: none;
+}
+
 .chrome-bottom {
   position: fixed;
   left: 0;
