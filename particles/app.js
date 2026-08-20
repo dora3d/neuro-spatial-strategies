@@ -30,6 +30,7 @@
     speed: document.getElementById("speed"),
     trail: document.getElementById("trail"),
     path: document.getElementById("path"),
+    network: document.getElementById("network"),
   };
   const outs = {
     birth: document.getElementById("birthOut"),
@@ -37,6 +38,7 @@
     speed: document.getElementById("speedOut"),
     trail: document.getElementById("trailOut"),
     path: document.getElementById("pathOut"),
+    network: document.getElementById("networkOut"),
   };
 
   let dpr = 1;
@@ -94,6 +96,8 @@
     outs.speed.textContent = `${Number(controls.speed.value).toFixed(2)}×`;
     outs.trail.textContent = controls.trail.value;
     outs.path.textContent = pathLabel(Number(controls.path.value));
+    const nv = Number(controls.network.value);
+    outs.network.textContent = nv < 0.01 ? "off" : nv.toFixed(2);
   }
 
   function clearAllHistories() {
@@ -339,7 +343,83 @@
     }
   }
 
+  function drawNetworkLinks(targetCtx, scale = 1) {
+    const net = Number(controls.network.value);
+    if (net < 0.01) return;
+
+    const maxDist = net * Math.hypot(w, h) * 0.14;
+    const maxLinks = Math.max(1, Math.round(net * 5));
+    const cellSize = Math.max(8, maxDist);
+    const grid = new Map();
+
+    const alive = [];
+    for (let i = 0; i < particles.length; i++) {
+      const p = particles[i];
+      if (!p.head) continue;
+      alive.push(i);
+      const cx = Math.floor(p.head.x / cellSize);
+      const cy = Math.floor(p.head.y / cellSize);
+      const key = `${cx},${cy}`;
+      let bucket = grid.get(key);
+      if (!bucket) {
+        bucket = [];
+        grid.set(key, bucket);
+      }
+      bucket.push(i);
+    }
+
+    targetCtx.lineWidth = Math.max(0.6, scale * 0.7);
+    targetCtx.lineCap = "round";
+
+    const drawn = new Set();
+    for (const i of alive) {
+      const a = particles[i];
+      const ax = a.head.x;
+      const ay = a.head.y;
+      const fadeA = 1 - a.age / a.maxLife;
+      const gx = Math.floor(ax / cellSize);
+      const gy = Math.floor(ay / cellSize);
+      const candidates = [];
+
+      for (let ox = -1; ox <= 1; ox++) {
+        for (let oy = -1; oy <= 1; oy++) {
+          const bucket = grid.get(`${gx + ox},${gy + oy}`);
+          if (!bucket) continue;
+          for (const j of bucket) {
+            if (j <= i) continue;
+            const b = particles[j];
+            const dx = b.head.x - ax;
+            const dy = b.head.y - ay;
+            const d2 = dx * dx + dy * dy;
+            if (d2 > maxDist * maxDist || d2 < 1) continue;
+            candidates.push({ j, d2 });
+          }
+        }
+      }
+
+      candidates.sort((u, v) => u.d2 - v.d2);
+      const take = Math.min(maxLinks, candidates.length);
+      for (let n = 0; n < take; n++) {
+        const j = candidates[n].j;
+        const key = `${i}:${j}`;
+        if (drawn.has(key)) continue;
+        drawn.add(key);
+        const b = particles[j];
+        const fadeB = 1 - b.age / b.maxLife;
+        const fade = Math.min(fadeA, fadeB);
+        const alpha = (0.08 + fade * 0.35) * (0.35 + net * 0.65);
+        targetCtx.beginPath();
+        targetCtx.moveTo(ax * scale, ay * scale);
+        targetCtx.lineTo(b.head.x * scale, b.head.y * scale);
+        targetCtx.strokeStyle = `rgba(245, 242, 235, ${alpha})`;
+        targetCtx.stroke();
+      }
+    }
+  }
+
   function drawParticles(targetCtx, scale = 1) {
+    drawNetworkLinks(targetCtx, scale);
+
     targetCtx.lineWidth = Math.max(1, scale);
     targetCtx.lineJoin = "round";
     targetCtx.lineCap = "round";

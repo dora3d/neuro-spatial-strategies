@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Space Collective — Neuro-Spatial Strategies</title>
+    <title>Space Collective — Spatial Strategies for Well-being</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -22,7 +22,7 @@
 
     <header class="chrome-top">
       <p class="presents">Space Collective presents:</p>
-      <h1 class="title">Neuro-Spatial Strategies</h1>
+      <h1 class="title">Spatial Strategies for Well-being</h1>
       <p class="subtitle">Designing for the Mind and Body</p>
     </header>
 
@@ -50,7 +50,7 @@
         </label>
         <label>
           <span>Speed</span>
-          <input id="speed" type="range" min="0.05" max="0.6" step="0.01" value="0.08" />
+          <input id="speed" type="range" min="0.05" max="0.3" step="0.01" value="0.08" />
           <output id="speedOut">0.08×</output>
         </label>
         <label>
@@ -64,6 +64,11 @@
           <output id="pathOut">slight</output>
         </label>
         <p class="path-hint">straight · random · fractal</p>
+        <label>
+          <span>Network</span>
+          <input id="network" type="range" min="0" max="1" step="0.01" value="0" />
+          <output id="networkOut">off</output>
+        </label>
         <label class="toggle-row">
           <span>Tags</span>
           <input id="tagsToggle" type="checkbox" checked />
