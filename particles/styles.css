@@ -115,13 +115,35 @@ canvas {
   );
 }
 
-.presents {
-  margin: 0 0 0.35rem;
-  font-size: 0.78rem;
-  font-weight: 500;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--muted);
+.chrome-brand {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: stretch;
+  column-gap: clamp(0.85rem, 2vw, 1.35rem);
+  max-width: min(56rem, calc(100vw - 3rem));
+}
+
+.chrome-titles {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.brand-logo {
+  display: block;
+  box-sizing: border-box;
+  align-self: center;
+  height: 90%;
+  width: auto;
+  aspect-ratio: 900 / 265;
+  margin: 0;
+  border: 0;
+  outline: 0;
+  box-shadow: none;
+  background-color: var(--ink);
+  -webkit-mask: url("space-collective-logo.png") left center / contain no-repeat;
+  mask: url("space-collective-logo.png") left center / contain no-repeat;
 }
 
 .title {
@@ -143,7 +165,7 @@ canvas {
 
 .controls {
   position: fixed;
-  top: 7.5rem;
+  top: 7.25rem;
   right: 0;
   z-index: 3;
   display: flex;
@@ -430,16 +452,30 @@ canvas {
   color: rgba(245, 242, 235, 0.78);
 }
 
-.partner {
-  margin: 0.85rem 0 0;
-  font-size: 0.86rem;
-  color: var(--muted);
-  font-style: italic;
+.about-kicker {
+  margin: 1.35rem 0 0.85rem;
+  font-family: var(--serif);
+  font-size: 1.15rem;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  color: var(--accent);
+}
+
+.info-section p + p {
+  margin-top: 0.85rem;
 }
 
 /* Know more page */
+html.page-info {
+  height: auto;
+  min-height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+html.page-info body.page-info,
 body.page-info {
-  overflow: auto;
+  overflow: visible;
   min-height: 100%;
   height: auto;
   background:
