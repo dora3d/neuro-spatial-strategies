@@ -135,7 +135,9 @@ canvas {
   box-sizing: border-box;
   align-self: center;
   height: 90%;
+  max-height: 4.6rem;
   width: auto;
+  max-width: min(14rem, 36vw);
   aspect-ratio: 900 / 265;
   margin: 0;
   border: 0;
@@ -539,6 +541,31 @@ body.page-info {
 }
 
 @media (max-width: 720px) {
+  .chrome-top {
+    padding: 1rem 1rem 0.85rem;
+  }
+
+  .chrome-brand {
+    grid-template-columns: 1fr;
+    row-gap: 0.55rem;
+    max-width: 100%;
+  }
+
+  .brand-logo {
+    height: auto;
+    max-height: none;
+    width: min(11.5rem, 70vw);
+    max-width: none;
+  }
+
+  .title {
+    font-size: clamp(1.4rem, 6.2vw, 1.85rem);
+  }
+
+  .subtitle {
+    font-size: clamp(0.95rem, 3.8vw, 1.15rem);
+  }
+
   .controls {
     top: auto;
     bottom: 5.75rem;
@@ -550,9 +577,5 @@ body.page-info {
 
   .chrome-bottom {
     padding-bottom: 0.9rem;
-  }
-
-  .chrome-top {
-    padding-right: 1rem;
   }
 }
