@@ -362,6 +362,48 @@ canvas {
   color: #fff8e8;
 }
 
+.hand-track {
+  display: block;
+  width: 100%;
+  margin: 0.15rem 0 0.35rem;
+  padding: 0.55rem 0.65rem;
+  border: 1px solid rgba(245, 242, 235, 0.28);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-align: left;
+  background: transparent;
+  cursor: pointer;
+}
+
+.hand-track:hover {
+  border-color: var(--accent);
+  color: #fff8e8;
+}
+
+.hand-track[aria-pressed="true"] {
+  border-color: var(--accent);
+  color: #fff8e8;
+  background: rgba(201, 162, 39, 0.14);
+}
+
+.hand-track:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+.hand-cam {
+  position: fixed;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
 .date-row {
   display: flex;
   align-items: center;

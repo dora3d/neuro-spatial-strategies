@@ -137,6 +137,7 @@
   resize();
 
   function setSourceFromEvent(e) {
+    if (handMode) return;
     const rect = canvas.getBoundingClientRect();
     const point = e.touches ? e.touches[0] : e;
     if (!point) return;
@@ -145,6 +146,7 @@
   }
 
   function onPointerDown(e) {
+    if (handMode) return;
     if (e.target !== canvas) return;
     dragging = true;
     setSourceFromEvent(e);
@@ -152,7 +154,7 @@
   }
 
   function onPointerMove(e) {
-    if (!dragging) return;
+    if (handMode || !dragging) return;
     setSourceFromEvent(e);
     e.preventDefault();
   }
@@ -168,6 +170,152 @@
   window.addEventListener("touchmove", onPointerMove, { passive: false });
   window.addEventListener("touchend", onPointerUp);
   window.addEventListener("touchcancel", onPointerUp);
+
+  // ——— Hand tracking (MediaPipe) ———
+  const handTrackBtn = document.getElementById("handTrackBtn");
+  const handCam = document.getElementById("handCam");
+  const MP_VERSION = "0.10.18";
+  const MP_BASE = `https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${MP_VERSION}`;
+  const HAND_MODEL =
+    "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task";
+
+  let handMode = false;
+  let handBusy = false;
+  let handLandmarker = null;
+  let handStream = null;
+  let handRaf = 0;
+  let lastHandDetect = -1;
+  let handSmoothX = null;
+  let handSmoothY = null;
+
+  function setHandButton(label, pressed, disabled) {
+    handTrackBtn.textContent = label;
+    handTrackBtn.setAttribute("aria-pressed", String(!!pressed));
+    handTrackBtn.disabled = !!disabled;
+  }
+
+  async function ensureHandLandmarker() {
+    if (handLandmarker) return handLandmarker;
+    const { HandLandmarker, FilesetResolver } = await import(
+      `${MP_BASE}/vision_bundle.mjs`
+    );
+    const vision = await FilesetResolver.forVisionTasks(`${MP_BASE}/wasm`);
+    const options = {
+      baseOptions: {
+        modelAssetPath: HAND_MODEL,
+        delegate: "GPU",
+      },
+      runningMode: "VIDEO",
+      numHands: 1,
+    };
+    try {
+      handLandmarker = await HandLandmarker.createFromOptions(vision, options);
+    } catch {
+      options.baseOptions.delegate = "CPU";
+      handLandmarker = await HandLandmarker.createFromOptions(vision, options);
+    }
+    return handLandmarker;
+  }
+
+  function stopHandCamera() {
+    if (handRaf) {
+      cancelAnimationFrame(handRaf);
+      handRaf = 0;
+    }
+    if (handStream) {
+      for (const track of handStream.getTracks()) track.stop();
+      handStream = null;
+    }
+    handCam.srcObject = null;
+    handSmoothX = null;
+    handSmoothY = null;
+    lastHandDetect = -1;
+  }
+
+  function tickHandTracking() {
+    if (!handMode || !handLandmarker || !handCam.srcObject) return;
+    handRaf = requestAnimationFrame(tickHandTracking);
+    if (handCam.readyState < 2) return;
+
+    const now = performance.now();
+    if (now === lastHandDetect) return;
+    lastHandDetect = now;
+
+    const result = handLandmarker.detectForVideo(handCam, now);
+    const marks = result?.landmarks?.[0];
+    if (!marks || !marks.length) return;
+
+    // Index fingertip (8), fall back to middle MCP (9)
+    const tip = marks[8] || marks[9];
+    if (!tip) return;
+
+    const targetX = (1 - tip.x) * w;
+    const targetY = tip.y * h;
+    if (handSmoothX == null) {
+      handSmoothX = targetX;
+      handSmoothY = targetY;
+    } else {
+      const follow = 0.35;
+      handSmoothX += (targetX - handSmoothX) * follow;
+      handSmoothY += (targetY - handSmoothY) * follow;
+    }
+    cx = Math.min(Math.max(handSmoothX, 0), w);
+    cy = Math.min(Math.max(handSmoothY, 0), h);
+  }
+
+  async function startHandTracking() {
+    setHandButton("Starting…", false, true);
+    try {
+      await ensureHandLandmarker();
+      handStream = await navigator.mediaDevices.getUserMedia({
+        audio: false,
+        video: {
+          facingMode: "user",
+          width: { ideal: 640 },
+          height: { ideal: 480 },
+        },
+      });
+      handCam.srcObject = handStream;
+      await handCam.play();
+      handMode = true;
+      dragging = false;
+      handSmoothX = null;
+      handSmoothY = null;
+      setHandButton("Hand on", true, false);
+      tickHandTracking();
+    } catch (err) {
+      console.error(err);
+      stopHandCamera();
+      handMode = false;
+      setHandButton("Hand track", false, false);
+      showExportToast(
+        err?.name === "NotAllowedError"
+          ? "Camera permission denied"
+          : "Camera unavailable"
+      );
+    }
+  }
+
+  function stopHandTracking() {
+    handMode = false;
+    stopHandCamera();
+    setHandButton("Hand track", false, false);
+  }
+
+  handTrackBtn.addEventListener("click", async () => {
+    if (handBusy) return;
+    handBusy = true;
+    try {
+      if (handMode) stopHandTracking();
+      else await startHandTracking();
+    } finally {
+      handBusy = false;
+    }
+  });
+
+  window.addEventListener("beforeunload", () => {
+    if (handMode) stopHandTracking();
+  });
 
   function activeTagCount() {
     let n = 0;

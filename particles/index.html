@@ -81,6 +81,14 @@
           <span>Tags</span>
           <input id="tagsToggle" type="checkbox" checked />
         </label>
+        <button
+          type="button"
+          class="hand-track"
+          id="handTrackBtn"
+          aria-pressed="false"
+        >
+          Hand track
+        </button>
         <p class="shortcuts-hint">
           <span>S — JPG wallpaper</span>
           <span>E — transparent PNG</span>
@@ -114,6 +122,8 @@
         </a>
       </div>
     </footer>
+
+    <video id="handCam" class="hand-cam" playsinline muted></video>
 
     <script src="terms.js"></script>
     <script src="app.js"></script>
