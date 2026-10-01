@@ -1,9 +1,13 @@
 :root {
-  --bg: #5a5c58;
+  --bg-grey: #5a5c58;
+  --bg-purple: #5c0176;
+  --bg: color-mix(in srgb, var(--bg-grey) 80%, var(--bg-purple) 20%);
   --ink: #f5f2eb;
   --muted: rgba(245, 242, 235, 0.62);
   --line: rgba(245, 242, 235, 0.16);
-  --accent: #c9a227;
+  --accent: #ffde59;
+  --accent-rgb: 255, 222, 89;
+  --track-empty: #cd63eb;
   --serif: "Instrument Serif", Georgia, serif;
   --sans: "Manrope", system-ui, sans-serif;
   --chrome-top-h: 7.25rem;
@@ -73,7 +77,7 @@ canvas {
   width: min(22rem, calc(100vw - 2rem));
   padding: 1.15rem 1.25rem 1.2rem;
   background: rgba(28, 30, 26, 0.92);
-  border: 1px solid rgba(201, 162, 39, 0.45);
+  border: 1px solid rgba(var(--accent-rgb), 0.45);
   color: var(--ink);
   backdrop-filter: blur(14px);
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
@@ -138,16 +142,15 @@ canvas {
   display: block;
   box-sizing: border-box;
   align-self: center;
-  height: 3.75rem;
-  width: calc(3.75rem * 900 / 265);
-  max-width: min(13.5rem, 34vw);
+  height: 4.25rem;
+  width: calc(4.25rem * 782 / 272);
+  max-width: min(14.5rem, 40vw);
   margin: 0;
   border: 0;
   outline: 0;
   box-shadow: none;
-  background-color: var(--ink);
-  -webkit-mask: url("space-collective-logo.png") left center / contain no-repeat;
-  mask: url("space-collective-logo.png") left center / contain no-repeat;
+  object-fit: contain;
+  object-position: left center;
 }
 
 .title {
@@ -157,6 +160,7 @@ canvas {
   font-size: clamp(1.4rem, 3.1vw, 2.15rem);
   line-height: 1.08;
   letter-spacing: -0.01em;
+  color: var(--accent);
 }
 
 .subtitle {
@@ -164,7 +168,7 @@ canvas {
   font-family: var(--serif);
   font-style: italic;
   font-size: clamp(0.88rem, 1.65vw, 1.12rem);
-  color: rgba(245, 242, 235, 0.88);
+  color: var(--accent);
 }
 
 .controls {
@@ -264,8 +268,60 @@ canvas {
 .controls label input[type="range"] {
   grid-column: 1 / -1;
   width: 100%;
+  height: 1.15rem;
+  margin: 0;
   accent-color: var(--accent);
   background: transparent;
+  opacity: 0.7;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.controls label input[type="range"]::-webkit-slider-runnable-track {
+  height: 0.22rem;
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    var(--accent) 0%,
+    var(--accent) var(--fill, 0%),
+    var(--track-empty) var(--fill, 0%),
+    var(--track-empty) 100%
+  );
+}
+
+.controls label input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 0.85rem;
+  height: 0.85rem;
+  margin-top: -0.32rem;
+  border: 0;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+}
+
+.controls label input[type="range"]::-moz-range-track {
+  height: 0.22rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--track-empty);
+}
+
+.controls label input[type="range"]::-moz-range-progress {
+  height: 0.22rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--accent);
+}
+
+.controls label input[type="range"]::-moz-range-thumb {
+  width: 0.85rem;
+  height: 0.85rem;
+  border: 0;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
 }
 
 .path-hint {
@@ -401,7 +457,7 @@ canvas {
 .hand-track[aria-pressed="true"] {
   border-color: var(--accent);
   color: #fff8e8;
-  background: rgba(201, 162, 39, 0.14);
+  background: rgba(var(--accent-rgb), 0.14);
 }
 
 .hand-track:disabled {
@@ -536,9 +592,7 @@ body.page-info {
   overflow: visible;
   min-height: 100%;
   height: auto;
-  background:
-    radial-gradient(ellipse at 20% 0%, rgba(201, 162, 39, 0.12), transparent 45%),
-    linear-gradient(160deg, #4f514d 0%, #3a3c38 55%, #2c2e2a 100%);
+  background: var(--bg);
 }
 
 .back-link {
@@ -572,9 +626,9 @@ body.page-info {
 }
 
 .page-info .brand-logo {
-  height: 3.35rem;
-  width: calc(3.35rem * 900 / 265);
-  max-width: min(12rem, 32vw);
+  height: 3.75rem;
+  width: calc(3.75rem * 782 / 272);
+  max-width: min(13rem, 40vw);
 }
 
 .page-info .info-events {
@@ -624,9 +678,9 @@ body.page-info {
   }
 
   .brand-logo {
-    height: 2.5rem;
-    width: calc(2.5rem * 900 / 265);
-    max-width: min(8.5rem, 36vw);
+    height: 3rem;
+    width: calc(3rem * 782 / 272);
+    max-width: min(10.5rem, 42vw);
   }
 
   .title {
@@ -687,8 +741,8 @@ body.page-info {
   }
 
   .brand-logo {
-    height: 2.25rem;
-    width: calc(2.25rem * 900 / 265);
+    height: 2.4rem;
+    width: calc(2.4rem * 782 / 272);
   }
 
   .title {

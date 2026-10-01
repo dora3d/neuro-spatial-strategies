@@ -90,6 +90,13 @@
     return { random, fractal };
   }
 
+  function syncRangeFill(el) {
+    const min = Number(el.min);
+    const max = Number(el.max);
+    const pct = ((Number(el.value) - min) / (max - min)) * 100;
+    el.style.setProperty("--fill", `${pct}%`);
+  }
+
   function syncLabels() {
     outs.birth.textContent = `${controls.birth.value} /s`;
     outs.life.textContent = `${Number(controls.life.value).toFixed(1)} s`;
@@ -98,6 +105,7 @@
     outs.path.textContent = pathLabel(Number(controls.path.value));
     const nv = Number(controls.network.value);
     outs.network.textContent = nv < 0.01 ? "off" : nv.toFixed(2);
+    for (const el of Object.values(controls)) syncRangeFill(el);
   }
 
   function clearAllHistories() {
@@ -591,20 +599,25 @@
       const size = (p.term ? 2.4 + fade * 1.8 : 1.4 + fade * 1.6) * scale;
       targetCtx.beginPath();
       targetCtx.fillStyle = p.term
-        ? `rgba(201, 162, 39, ${0.55 + fade * 0.4})`
+        ? `rgba(255, 222, 89, ${0.55 + fade * 0.4})`
         : `rgba(245, 242, 235, ${0.45 + fade * 0.5})`;
       targetCtx.arc(head.x * scale, head.y * scale, size, 0, Math.PI * 2);
       targetCtx.fill();
     }
   }
 
+  function readBg() {
+    const computed = getComputedStyle(document.body).backgroundColor;
+    return computed && computed !== "rgba(0, 0, 0, 0)" ? computed : "#5b2f67";
+  }
+
   function draw() {
-    ctx.fillStyle = "#5a5c58";
+    ctx.fillStyle = readBg();
     ctx.fillRect(0, 0, w, h);
     drawParticles(ctx, 1);
   }
 
-  const BG = "#5a5c58";
+  const BG = readBg();
   const exportToast = document.getElementById("exportToast");
   let toastTimer = 0;
   let exportBusy = false;
