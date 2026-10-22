@@ -8,10 +8,16 @@
   const controlsEl = document.getElementById("controls");
   const controlsToggle = document.getElementById("controlsToggle");
 
-  controlsToggle.addEventListener("click", () => {
-    const collapsed = controlsEl.classList.toggle("collapsed");
+  function setControlsCollapsed(collapsed) {
+    controlsEl.classList.toggle("collapsed", collapsed);
     controlsToggle.setAttribute("aria-expanded", String(!collapsed));
     controlsToggle.title = collapsed ? "Show controls" : "Hide controls";
+  }
+
+  const peekHide = setTimeout(() => setControlsCollapsed(true), 1000);
+  controlsToggle.addEventListener("click", () => {
+    clearTimeout(peekHide);
+    setControlsCollapsed(!controlsEl.classList.contains("collapsed"));
   });
 
   const tagsToggle = document.getElementById("tagsToggle");
